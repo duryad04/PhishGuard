@@ -52,6 +52,17 @@ function App() {
     }
   };
 
+  const clearHistory = async () => {
+    if (!window.confirm("Clear all scan history?")) return;
+    try {
+      await fetch("http://127.0.0.1:5000/clear", { method: "DELETE" });
+      setHistory([]);
+      setResult(null);
+    } catch (error) {
+      alert("Could not connect to backend server");
+    }
+  };
+
   useEffect(() => {
     fetchHistory();
   }, []);
@@ -66,8 +77,8 @@ function App() {
   return (
     <div className="app">
       <div className="main-card">
-        <h1>PhishGuard</h1>
-        <p className="subtitle">
+        <h1><span style={{color: "#7b49fe"}}>Phish</span><span style={{color: "#5277ec"}}>Guard</span></h1>
+        <p className="subtitle" style={{marginTop: "25px"}}>
           A phishing link detection tool that checks URLs for suspicious patterns.
         </p>
 
@@ -77,6 +88,7 @@ function App() {
             placeholder="Paste suspicious URL here..."
             value={url}
             onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && analyzeUrl()}
           />
           <button onClick={analyzeUrl} disabled={loading}>
             {loading ? "Scanning..." : "Scan URL"}
@@ -104,7 +116,15 @@ function App() {
       </div>
 
       <div className="history-card">
-        <h2>Recent Scan History</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h2>Recent Scan History</h2>
+          <button onClick={clearHistory} style={{
+            background: "#c0392b", color: "white", border: "none",
+            padding: "6px 14px", borderRadius: "6px", cursor: "pointer", fontSize: "14px"
+          }}>
+            Clear History
+          </button>
+        </div>
 
         {history.length === 0 ? (
           <p>No scans yet.</p>

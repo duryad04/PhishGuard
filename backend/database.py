@@ -67,3 +67,11 @@ def get_history():
         }
         for row in rows
     ]
+
+
+def clear_history():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM scans")
+    conn.commit()
+    conn.close()

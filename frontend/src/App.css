@@ -3,10 +3,11 @@
 }
 
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f2f7f4;
-  color: #1f2937;
+  background-color: #ffffff;
+  background-image: 
+    radial-gradient(ellipse at top left, rgba(123, 73, 254, 1) 0%, transparent 80%),
+    radial-gradient(ellipse at bottom right, rgba(82, 119, 236, 1) 0%, transparent 80%);
+  min-height: 100vh;
 }
 
 .app {
@@ -26,7 +27,6 @@ body {
 
 h1 {
   text-align: center;
-  color: #0f5132;
   font-size: 42px;
   margin-bottom: 10px;
 }

@@ -1,12 +1,35 @@
+import logging
+from logging.handlers import RotatingFileHandler
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from detector import analyze_url
-from database import init_db, save_scan, get_history
+from database import init_db, save_scan, get_history, clear_history
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["http://localhost:5173"])
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"]
+)
+
+handler = RotatingFileHandler("phishguard.log", maxBytes=100000, backupCount=3)
+handler.setLevel(logging.WARNING)
+app.logger.addHandler(handler)
 
 init_db()
+
+
+@app.after_request
+def add_security_headers(response):
+    response.headers['Content-Security-Policy'] = "default-src 'self'"
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['Referrer-Policy'] = 'no-referrer'
+    return response
 
 
 @app.route("/", methods=["GET"])
@@ -15,6 +38,7 @@ def home():
 
 
 @app.route("/analyze", methods=["POST"])
+@limiter.limit("30 per minute")
 def analyze():
     data = request.get_json()
 
@@ -27,6 +51,9 @@ def analyze():
         return jsonify({"error": "URL is too long"}), 400
 
     analysis = analyze_url(url)
+
+    if analysis["risk_score"] >= 60:
+        app.logger.warning(f"High-risk URL scanned: {url} | Score: {analysis['risk_score']}")
 
     save_scan(
         url=url,
@@ -46,6 +73,12 @@ def analyze():
 @app.route("/history", methods=["GET"])
 def history():
     return jsonify(get_history())
+
+
+@app.route("/clear", methods=["DELETE"])
+def clear():
+    clear_history()
+    return jsonify({"message": "History cleared"})
 
 
 if __name__ == "__main__":

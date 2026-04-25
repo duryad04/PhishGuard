@@ -25,7 +25,7 @@ init_db()
 
 @app.after_request
 def add_security_headers(response):
-    response.headers['Content-Security-Policy'] = "default-src 'self'"
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['Referrer-Policy'] = 'no-referrer'
@@ -71,15 +71,17 @@ def analyze():
 
 
 @app.route("/history", methods=["GET"])
+@limiter.limit("30 per minute")
 def history():
     return jsonify(get_history())
 
 
 @app.route("/clear", methods=["DELETE"])
+@limiter.limit("5 per minute")
 def clear():
     clear_history()
     return jsonify({"message": "History cleared"})
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)

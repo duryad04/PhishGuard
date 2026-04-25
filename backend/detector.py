@@ -9,6 +9,8 @@ SUSPICIOUS_KEYWORDS = [
 
 BRAND_NAMES = ["paypal", "amazon", "google", "apple", "microsoft", "netflix", "facebook"]
 
+TRUSTED_TLDS = [".com", ".org", ".net", ".io", ".co"]
+
 TRUSTED_DOMAINS = [
     "paypal.com", "google.com", "amazon.com", "apple.com",
     "microsoft.com", "netflix.com", "facebook.com", "instagram.com",
@@ -24,7 +26,6 @@ def is_valid_url(url):
             return False
         if not result.netloc:
             return False
-        # Real domains must contain a dot (e.g. google.com)
         if '.' not in result.netloc:
             return False
         return True
@@ -53,9 +54,11 @@ def is_ssrf_safe(url):
 
 
 def check_brand_impersonation(domain):
+    bare = domain[4:] if domain.startswith("www.") else domain
     for brand in BRAND_NAMES:
-        if brand in domain and not domain.endswith(f"{brand}.com"):
-            return brand
+        if brand in bare:
+            if not any(bare == f"{brand}{tld}" for tld in TRUSTED_TLDS):
+                return brand
     return None
 
 
@@ -68,7 +71,6 @@ def analyze_url(url):
     if not url:
         return {"result": "Invalid", "risk_score": 100, "reasons": ["URL cannot be empty"]}
 
-    # Strip HTML tags before any processing
     url = re.sub(r'<[^>]+>', '', url)
 
     if not url.startswith(("http://", "https://")):
@@ -76,11 +78,9 @@ def analyze_url(url):
         reasons.append("URL did not include http or https")
         risk_score += 10
 
-    # Whitelist validation — reject non-URLs early
     if not is_valid_url(url):
         return {"result": "Invalid", "risk_score": 100, "reasons": ["Input is not a valid URL"]}
 
-    # SSRF guard — block internal/private addresses
     if not is_ssrf_safe(url):
         return {"result": "Dangerous", "risk_score": 100, "reasons": ["URL points to an internal or private network address"]}
 
@@ -88,10 +88,8 @@ def analyze_url(url):
     domain = parsed.netloc.lower()
     path = parsed.path.lower()
 
-    # Remove www. prefix for comparison
     bare_domain = domain[4:] if domain.startswith("www.") else domain
 
-    # Trusted domain early exit
     if bare_domain in TRUSTED_DOMAINS:
         return {"result": "Safe", "risk_score": 0, "reasons": ["Domain is a verified trusted website"]}
 
@@ -120,7 +118,6 @@ def analyze_url(url):
         reasons.append("URL uses an IP address instead of a domain name")
         risk_score += 30
 
-    # Brand impersonation check (weighted higher)
     impersonated_brand = check_brand_impersonation(domain)
     if impersonated_brand:
         reasons.append(f"Domain impersonates a known brand: {impersonated_brand}")

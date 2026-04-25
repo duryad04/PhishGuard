@@ -1,0 +1,161 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f2f7f4;
+  color: #1f2937;
+}
+
+.app {
+  min-height: 100vh;
+  padding: 40px;
+}
+
+.main-card,
+.history-card {
+  max-width: 900px;
+  margin: 0 auto 30px auto;
+  background: white;
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+h1 {
+  text-align: center;
+  color: #0f5132;
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  text-align: center;
+  color: #4b5563;
+  margin-bottom: 30px;
+}
+
+.input-box {
+  display: flex;
+  gap: 12px;
+}
+
+.input-box input {
+  flex: 1;
+  padding: 15px;
+  border: 2px solid #b7d7c0;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+.input-box input:focus {
+  outline: none;
+  border-color: #198754;
+}
+
+.input-box button {
+  padding: 15px 25px;
+  background: #198754;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.input-box button:hover {
+  background: #146c43;
+}
+
+.input-box button:disabled {
+  background: gray;
+  cursor: not-allowed;
+}
+
+.result-card {
+  margin-top: 25px;
+  padding: 22px;
+  border-radius: 14px;
+  border-left: 8px solid;
+}
+
+.result-card h2 {
+  margin-top: 0;
+}
+
+.safe {
+  color: #198754;
+  border-color: #198754;
+}
+
+.suspicious {
+  color: #b7791f;
+  border-color: #f59e0b;
+}
+
+.dangerous {
+  color: #dc2626;
+  border-color: #dc2626;
+}
+
+.invalid {
+  color: #6b7280;
+  border-color: #6b7280;
+}
+
+.result-card.safe {
+  background: #ecfdf3;
+}
+
+.result-card.suspicious {
+  background: #fff7ed;
+}
+
+.result-card.dangerous {
+  background: #fef2f2;
+}
+
+.history-card h2 {
+  color: #0f5132;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #d1d5db;
+  padding: 15px;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.history-item p {
+  margin: 5px 0;
+  word-break: break-all;
+}
+
+.history-item small {
+  color: #6b7280;
+}
+
+.history-item span {
+  font-weight: bold;
+}
+
+@media (max-width: 700px) {
+  .input-box {
+    flex-direction: column;
+  }
+
+  .app {
+    padding: 20px;
+  }
+}

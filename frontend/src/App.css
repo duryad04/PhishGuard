@@ -3,6 +3,8 @@
 }
 
 body {
+  margin: 0;
+  padding: 0;
   background-color: #ffffff;
   background-image: 
     radial-gradient(ellipse at top left, rgba(123, 73, 254, 1) 0%, transparent 80%),

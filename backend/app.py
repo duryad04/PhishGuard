@@ -50,7 +50,11 @@ def analyze():
     if len(url) > 500:
         return jsonify({"error": "URL is too long"}), 400
 
-    analysis = analyze_url(url)
+    try:
+        analysis = analyze_url(url)
+    except Exception as e:
+        app.logger.error(f"Analysis error: {e}")
+        return jsonify({"error": "Analysis failed unexpectedly"}), 500
 
     if analysis["risk_score"] >= 60:
         app.logger.warning(f"High-risk URL scanned: {url} | Score: {analysis['risk_score']}")

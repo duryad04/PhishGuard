@@ -1,16 +1,21 @@
-import re
-from urllib.parse import urlparse
+# Import necessary modules
+import re  # Regular expressions for pattern matching
+from urllib.parse import urlparse  # For parsing URLs
 
+# List of suspicious keywords commonly found in phishing URLs
 SUSPICIOUS_KEYWORDS = [
     "login", "verify", "update", "secure", "account",
     "bank", "paypal", "confirm", "password", "signin",
     "free", "gift", "reward", "urgent"
 ]
 
+# List of well-known brand names that are often impersonated
 BRAND_NAMES = ["paypal", "amazon", "google", "apple", "microsoft", "netflix", "facebook"]
 
+# List of trusted top-level domains (TLDs)
 TRUSTED_TLDS = [".com", ".org", ".net", ".io", ".co"]
 
+# List of trusted domains that are considered safe
 TRUSTED_DOMAINS = [
     "paypal.com", "google.com", "amazon.com", "apple.com",
     "microsoft.com", "netflix.com", "facebook.com", "instagram.com",
@@ -18,25 +23,26 @@ TRUSTED_DOMAINS = [
     "youtube.com", "wikipedia.org"
 ]
 
-
+# Function to validate if a URL is well-formed
 def is_valid_url(url):
     try:
-        result = urlparse(url)
-        if result.scheme not in ('http', 'https'):
+        result = urlparse(url)  # Parse the URL
+        if result.scheme not in ('http', 'https'):  # Check for valid scheme
             return False
-        if not result.netloc:
+        if not result.netloc:  # Check for valid domain
             return False
-        if '.' not in result.netloc:
+        if '.' not in result.netloc:  # Ensure domain contains a dot
             return False
         return True
     except Exception:
         return False
 
-
+# Function to check if a URL is safe from SSRF (Server-Side Request Forgery)
 def is_ssrf_safe(url):
     try:
-        parsed = urlparse(url)
-        host = parsed.hostname or ""
+        parsed = urlparse(url)  # Parse the URL
+        host = parsed.hostname or ""  # Extract the hostname
+        # Block localhost and private IP ranges
         if host in ('localhost', '127.0.0.1', '::1', '0.0.0.0'):
             return False
         blocked_prefixes = [
@@ -46,35 +52,35 @@ def is_ssrf_safe(url):
             '172.28.', '172.29.', '172.30.', '172.31.'
         ]
         for prefix in blocked_prefixes:
-            if host.startswith(prefix):
+            if host.startswith(prefix):  # Check if the host starts with a blocked prefix
                 return False
         return True
     except Exception:
         return False
 
-
+# Function to check if a domain impersonates a known brand
 def check_brand_impersonation(domain):
-    bare = domain[4:] if domain.startswith("www.") else domain
+    bare = domain[4:] if domain.startswith("www.") else domain  # Remove 'www.' prefix
     for brand in BRAND_NAMES:
-        if brand in bare:
-            if not any(bare == f"{brand}{tld}" for tld in TRUSTED_TLDS):
+        if brand in bare:  # Check if the brand name is in the domain
+            if not any(bare == f"{brand}{tld}" for tld in TRUSTED_TLDS):  # Ensure it's not a trusted domain
                 return brand
     return None
 
-
+# Function to analyze a URL for phishing indicators
 def analyze_url(url):
-    reasons = []
-    risk_score = 0
+    reasons = []  # List to store reasons for the risk score
+    risk_score = 0  # Initialize risk score
 
-    url = url.strip()
+    url = url.strip()  # Remove leading/trailing whitespace
 
     if not url:
         return {"result": "Invalid", "risk_score": 100, "reasons": ["URL cannot be empty"]}
 
-    url = re.sub(r'<[^>]+>', '', url)
+    url = re.sub(r'<[^>]+>', '', url)  # Remove any HTML tags
 
     if not url.startswith(("http://", "https://")):
-        url = "http://" + url
+        url = "http://" + url  # Add http if missing
         reasons.append("URL did not include http or https")
         risk_score += 10
 
@@ -84,11 +90,11 @@ def analyze_url(url):
     if not is_ssrf_safe(url):
         return {"result": "Dangerous", "risk_score": 100, "reasons": ["URL points to an internal or private network address"]}
 
-    parsed = urlparse(url)
-    domain = parsed.netloc.lower()
-    path = parsed.path.lower()
+    parsed = urlparse(url)  # Parse the URL
+    domain = parsed.netloc.lower()  # Extract and normalize the domain
+    path = parsed.path.lower()  # Extract and normalize the path
 
-    bare_domain = domain[4:] if domain.startswith("www.") else domain
+    bare_domain = domain[4:] if domain.startswith("www.") else domain  # Remove 'www.' prefix
 
     if bare_domain in TRUSTED_DOMAINS:
         return {"result": "Safe", "risk_score": 0, "reasons": ["Domain is a verified trusted website"]}
@@ -136,8 +142,9 @@ def analyze_url(url):
         reasons.append("URL path is unusually long")
         risk_score += 10
 
-    risk_score = min(risk_score, 100)
+    risk_score = min(risk_score, 100)  # Cap the risk score at 100
 
+    # Determine the result based on the risk score
     if risk_score >= 60:
         result = "Dangerous"
     elif risk_score >= 30:

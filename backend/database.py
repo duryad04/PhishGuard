@@ -1,11 +1,11 @@
-# Import necessary modules
+# Here we import necessary modules
 import sqlite3  # SQLite database module
 from datetime import datetime  # For handling timestamps
 
-# Define the database file name
+# Here we define the database file name
 DB_NAME = "phishing_guard.db"
 
-# Function to initialize the database
+# Here we define the function to initialize the database
 def init_db():
     """
     Creates the 'scans' table in the database if it doesn't already exist.
@@ -13,7 +13,7 @@ def init_db():
     conn = sqlite3.connect(DB_NAME)  # Connect to the SQLite database
     cursor = conn.cursor()  # Create a cursor object to execute SQL commands
 
-    # Create the 'scans' table with the required columns
+    # Here we create the 'scans' table with the required columns
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS scans (
         id INTEGER PRIMARY KEY AUTOINCREMENT,  -- Auto-incrementing ID
@@ -28,7 +28,7 @@ def init_db():
     conn.commit()  # Commit the changes
     conn.close()  # Close the database connection
 
-# Function to save a scan result to the database
+# Here we define the function to save a scan result to the database
 def save_scan(url, result, risk_score, reasons):
     """
     Saves the result of a URL scan to the database.
@@ -37,34 +37,34 @@ def save_scan(url, result, risk_score, reasons):
     :param risk_score: The risk score of the URL
     :param reasons: The reasons for the risk score
     """
-    conn = sqlite3.connect(DB_NAME)  # Connect to the SQLite database
-    cursor = conn.cursor()  # Create a cursor object to execute SQL commands
+    conn = sqlite3.connect(DB_NAME)  # Here we connect to the SQLite database
+    cursor = conn.cursor()  # Here we create a cursor object to execute SQL commands
 
-    # Insert the scan result into the 'scans' table
+    # Here we insert the scan result into the 'scans' table
     cursor.execute("""
         INSERT INTO scans (url, result, risk_score, reasons, scanned_at)
         VALUES (?, ?, ?, ?, ?)
     """, (
-        url,  # URL being scanned
-        result,  # Result of the scan
-        risk_score,  # Risk score of the URL
-        ", ".join(reasons),  # Join reasons into a single string
-        datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Current timestamp
+        url,  # Here we insert the URL being scanned
+        result,  # Here we insert the result of the scan
+        risk_score,  # Here we insert the risk score of the URL
+        ", ".join(reasons),  # Here we insert the reasons for the risk score
+        datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Here we insert the current timestamp
     ))
 
-    conn.commit()  # Commit the changes
-    conn.close()  # Close the database connection
+    conn.commit()  # Here we commit the changes
+    conn.close()  # Here we close the database connection
 
-# Function to retrieve the scan history
+# Here we define the function to retrieve the scan history
 def get_history():
     """
     Retrieves the last 20 scan records from the database.
     :return: A list of dictionaries containing scan details
     """
-    conn = sqlite3.connect(DB_NAME)  # Connect to the SQLite database
-    cursor = conn.cursor()  # Create a cursor object to execute SQL commands
+    conn = sqlite3.connect(DB_NAME)  # Here we connect to the SQLite database
+    cursor = conn.cursor()  # Here we create a cursor object to execute SQL commands
 
-    # Select the last 20 scan records, ordered by ID in descending order
+    # Here we select the last 20 scan records, ordered by ID in descending order
     cursor.execute("""
         SELECT id, url, result, risk_score, reasons, scanned_at
         FROM scans
@@ -72,32 +72,32 @@ def get_history():
         LIMIT 20
     """)
 
-    rows = cursor.fetchall()  # Fetch all rows from the query result
-    conn.close()  # Close the database connection
+    rows = cursor.fetchall()  # Here we fetch all rows from the query result
+    conn.close()  # Here we close the database connection
 
-    # Convert the rows into a list of dictionaries
+    # Here we convert the rows into a list of dictionaries
     return [
         {
-            "id": row[0],  # Scan ID
-            "url": row[1],  # URL scanned
-            "result": row[2],  # Scan result
-            "risk_score": row[3],  # Risk score
-            "reasons": row[4],  # Reasons for the risk score
-            "scanned_at": row[5]  # Timestamp of the scan
+            "id": row[0],  # Here we convert the scan ID
+            "url": row[1],  # Here we convert the URL scanned
+            "result": row[2],  # Here we convert the scan result
+            "risk_score": row[3],  # Here we convert the risk score
+            "reasons": row[4],  # Here we convert the reasons for the risk score
+            "scanned_at": row[5]  # Here we convert the timestamp of the scan
         }
         for row in rows
     ]
 
-# Function to clear the scan history
+# Here we define the function to clear the scan history
 def clear_history():
     """
     Deletes all scan records from the database.
     """
-    conn = sqlite3.connect(DB_NAME)  # Connect to the SQLite database
-    cursor = conn.cursor()  # Create a cursor object to execute SQL commands
+    conn = sqlite3.connect(DB_NAME)  # Here we connect to the SQLite database
+    cursor = conn.cursor()  # Here we create a cursor object to execute SQL commands
 
-    # Delete all records from the 'scans' table
+    # Here we delete all records from the 'scans' table
     cursor.execute("DELETE FROM scans")
 
-    conn.commit()  # Commit the changes
-    conn.close()  # Close the database connection
+    conn.commit()  # Here we commit the changes
+    conn.close()  # Here we close the database connection
